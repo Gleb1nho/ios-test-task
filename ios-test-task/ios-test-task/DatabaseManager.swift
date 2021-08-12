@@ -59,20 +59,17 @@ extension AppDatabase {
     }
   }
   
-  func getUsersByQuery(query: String) throws -> [UserDBModel]? {
-    try dbWriter.read { db in
+  func getUsersByQuery(query: String) throws -> [UserDBModel] {
+    try dbWriter.read { db -> [UserDBModel] in
       do {
-        let sqlForNameFiltering = "select * from userDBModel where name like '%\(query)%'"
-        let sqlForPhoneFiltering = "select * from userDBModel where formattedPhone like '%\(query)%'"
-        let usersFilteredByName = try UserDBModel.fetchAll(db, sql: sqlForNameFiltering)
-        let usersFilteredByPhone = try UserDBModel.fetchAll(db, sql: sqlForPhoneFiltering)
-        let filteredUsers = Set(usersFilteredByName + usersFilteredByPhone)
-        print(filteredUsers)
+        let sqlForFiltering = "select * from userDBModel where name like '%\(query)%' or formattedPhone like '%\(query)%';"
+        let filteredUsers = try UserDBModel.fetchAll(db, sql: sqlForFiltering)
+        return filteredUsers
       }
       catch let err {
         print(err)
+        return []
       }
     }
-    return nil
   }
 }

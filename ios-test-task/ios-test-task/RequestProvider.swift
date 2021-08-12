@@ -62,6 +62,7 @@ struct RequsetProvider {
   }
   
   func getAllUserData() {
+    flushDatabase()
     getFirstUrlData()
     getSecondUrlData()
     getThirdUrlData()
