@@ -6,6 +6,7 @@ class UserDetailsViewController: UIViewController, UITextViewDelegate {
   private let containerView: UIView = {
     let view = UIView()
     
+    view.preservesSuperviewLayoutMargins = true
     view.translatesAutoresizingMaskIntoConstraints = false
     view.backgroundColor = .white
     
@@ -14,6 +15,8 @@ class UserDetailsViewController: UIViewController, UITextViewDelegate {
   
   private lazy var scrollView: UIScrollView = {
     let scrollView = UIScrollView()
+    
+    scrollView.preservesSuperviewLayoutMargins = true
     scrollView.translatesAutoresizingMaskIntoConstraints = false
     scrollView.backgroundColor = .white
     scrollView.addSubview(containerView)
@@ -120,6 +123,7 @@ class UserDetailsViewController: UIViewController, UITextViewDelegate {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    navigationItem.largeTitleDisplayMode = .never
     setup()
   }
   

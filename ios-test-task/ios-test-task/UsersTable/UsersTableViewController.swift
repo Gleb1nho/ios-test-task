@@ -1,7 +1,30 @@
 import UIKit
 
 class UsersTableViewController: UITableViewController {
-  private let userCells = try! AppDatabase.shared.getUsersByQuery(query: "")
+  private var userCells: [UserDBModel] = {
+    let userCells = try! AppDatabase.shared.getUsersByQuery(query: "")
+    return userCells.sorted(by: { $0.name < $1.name })
+  }()
+    
+  private var isSearchBarEmpty: Bool {
+    searchController.searchBar.text?.isEmpty ?? true
+  }
+  
+  private var isFiltering: Bool {
+    searchController.isActive && !isSearchBarEmpty
+  }
+  
+  private var searchTimer: Timer?
+  
+  private let searchController: UISearchController = {
+    let searchController = UISearchController(searchResultsController: nil)
+    return searchController
+  }()
+  
+  private func filterUsersForSearchText(query: String?) {
+    let userCells = try! AppDatabase.shared.getUsersByQuery(query: query ?? "")
+    self.userCells = userCells.sorted(by: { $0.name < $1.name })
+  }
   
   override func numberOfSections(in tableView: UITableView) -> Int {
     1
@@ -15,6 +38,19 @@ class UsersTableViewController: UITableViewController {
     tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
     tableView.rowHeight = 64.0
     tableView.cellLayoutMarginsFollowReadableWidth = true
+    
+    searchController.searchResultsUpdater = self
+    searchController.obscuresBackgroundDuringPresentation = false
+    definesPresentationContext = true
+    
+    navigationItem.searchController = searchController
+    
+    let navigationBarAppearance = UINavigationBarAppearance()
+    navigationBarAppearance.configureWithDefaultBackground()
+    navigationController?.navigationBar.scrollEdgeAppearance = navigationBarAppearance
+    navigationController?.navigationBar.prefersLargeTitles = true
+    
+    navigationItem.title = "Contacts"
   }
   
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -59,5 +95,26 @@ class UsersTableViewController: UITableViewController {
     tableView.deselectRow(at: indexPath, animated: true)
     let detailedUserVC = UserDetailsViewController(userInfo: userCells[indexPath.row])
     navigationController?.pushViewController(detailedUserVC, animated: true)
+  }
+}
+
+extension UsersTableViewController: UISearchResultsUpdating {
+  func updateSearchResults(for searchController: UISearchController) {
+    self.searchTimer?.invalidate()
+    
+    guard let searchText = searchController.searchBar.text else { return }
+    
+    searchTimer = Timer.scheduledTimer(
+      withTimeInterval: 0.5,
+      repeats: false,
+      block: { [weak self] timer in
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+          self?.filterUsersForSearchText(query: searchText)
+          DispatchQueue.main.async { [weak self] in
+            self?.tableView.reloadData()
+          }
+        }
+      }
+    )
   }
 }
