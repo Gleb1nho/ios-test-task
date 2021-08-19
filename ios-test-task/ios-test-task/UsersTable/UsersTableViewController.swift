@@ -15,6 +15,7 @@ class UsersTableViewController: UITableViewController {
   }
   
   private var searchTimer: Timer?
+  private var toastTimer: Timer?
   
   private let searchController: UISearchController = {
     let searchController = UISearchController(searchResultsController: nil)
@@ -24,6 +25,22 @@ class UsersTableViewController: UITableViewController {
   private func filterUsersForSearchText(query: String?) {
     let userCells = try! AppDatabase.shared.getUsersByQuery(query: query ?? "")
     self.userCells = userCells.sorted(by: { $0.name < $1.name })
+  }
+  
+  private func configureRefreshControl() {
+    tableView.refreshControl = UIRefreshControl()
+    tableView.refreshControl?.addTarget(
+      self,
+      action: #selector(handleRefreshControl),
+      for: .valueChanged
+    )
+  }
+  
+  @objc private func handleRefreshControl() {
+    RequsetProvider().updateUsersData()
+    DispatchQueue.main.async {
+      self.tableView.refreshControl?.endRefreshing()
+    }
   }
   
   override func numberOfSections(in tableView: UITableView) -> Int {
@@ -43,13 +60,13 @@ class UsersTableViewController: UITableViewController {
     searchController.obscuresBackgroundDuringPresentation = false
     definesPresentationContext = true
     
-    navigationItem.searchController = searchController
+    configureRefreshControl()
     
+    navigationItem.searchController = searchController
     let navigationBarAppearance = UINavigationBarAppearance()
     navigationBarAppearance.configureWithDefaultBackground()
     navigationController?.navigationBar.scrollEdgeAppearance = navigationBarAppearance
     navigationController?.navigationBar.prefersLargeTitles = true
-    
     navigationItem.title = "Contacts"
   }
   
@@ -112,6 +129,45 @@ extension UsersTableViewController: UISearchResultsUpdating {
           self?.filterUsersForSearchText(query: searchText)
           DispatchQueue.main.async { [weak self] in
             self?.tableView.reloadData()
+          }
+        }
+      }
+    )
+  }
+}
+
+extension UsersTableViewController {
+  func showErrorToast() {
+    self.toastTimer?.invalidate()
+    
+    let toastLabel = UILabel()
+    
+    toastLabel.backgroundColor = .black
+    toastLabel.textColor = .white
+    toastLabel.text = "Нет подключения к сети"
+    toastLabel.font = .boldSystemFont(ofSize: 20)
+    toastLabel.backgroundColor = UIColor(white: 0, alpha: 0.6)
+    toastLabel.layer.cornerRadius = 10
+    toastLabel.layer.masksToBounds = true
+    toastLabel.translatesAutoresizingMaskIntoConstraints = false
+    toastLabel.textAlignment = .center
+    
+    view.addSubview(toastLabel)
+    
+    NSLayoutConstraint.activate([
+      toastLabel.topAnchor.constraint(equalTo: view.readableContentGuide.bottomAnchor, constant: -60),
+      toastLabel.bottomAnchor.constraint(equalTo: view.readableContentGuide.bottomAnchor),
+      toastLabel.centerXAnchor.constraint(equalTo: view.readableContentGuide.centerXAnchor),
+      toastLabel.widthAnchor.constraint(equalTo: view.readableContentGuide.widthAnchor, multiplier: 8/9)
+    ])
+    
+    searchTimer = Timer.scheduledTimer(
+      withTimeInterval: 2,
+      repeats: false,
+      block: { timer in
+        DispatchQueue.global(qos: .userInteractive).async {
+          DispatchQueue.main.async {
+            toastLabel.removeFromSuperview()
           }
         }
       }

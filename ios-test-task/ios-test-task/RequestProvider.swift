@@ -3,6 +3,7 @@ import Foundation
 
 struct RequsetProvider {
   private let provider = MoyaProvider<MoyaExampleService>()
+  let usersTableVC = UsersTableViewController()
   
   private func writeResultToDB(users: [User]) {
     users.map {
@@ -19,7 +20,7 @@ struct RequsetProvider {
   private func handleRequestResult(result: Result<Response, MoyaError>) {
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .iso8601
-    
+
     switch result {
     case .success(let response):
       do {
@@ -30,24 +31,28 @@ struct RequsetProvider {
       }
     case .failure(let requestError):
       print("An error occured while handling request: \(requestError)")
+      usersTableVC.showErrorToast()
     }
   }
   
   private func getFirstUrlData() {
     provider.request(.getFirstUrlData) { result in
       handleRequestResult(result: result)
+      print("First datasource data was delivered and served")
     }
   }
   
   private func getSecondUrlData() {
     provider.request(.getSecondUrlData) { result in
       handleRequestResult(result: result)
+      print("Second datasource data was delivered and served")
     }
   }
   
   private func getThirdUrlData() {
     provider.request(.getThirdUrlData) { result in
       handleRequestResult(result: result)
+      print("Third datasource data was delivered and served")
     }
   }
   
@@ -61,7 +66,7 @@ struct RequsetProvider {
     }
   }
   
-  func getAllUserData() {
+  func updateUsersData() {
     flushDatabase()
     getFirstUrlData()
     getSecondUrlData()
