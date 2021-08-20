@@ -55,6 +55,7 @@ class UsersTableViewController: UITableViewController {
     tableView.register(UserTableViewCell.self, forCellReuseIdentifier: "cellId")
     tableView.rowHeight = 64.0
     tableView.cellLayoutMarginsFollowReadableWidth = true
+    tableView.tableFooterView = UIView()
     
     searchController.searchResultsUpdater = self
     searchController.obscuresBackgroundDuringPresentation = false
