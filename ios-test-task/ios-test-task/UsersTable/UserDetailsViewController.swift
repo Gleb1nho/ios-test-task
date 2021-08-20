@@ -40,8 +40,13 @@ class UserDetailsViewController: UIViewController, UITextViewDelegate {
   
   private lazy var dateOfEducationLabel: UILabel = {
     let dateOfEducationLabel = UILabel()
+        
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateStyle = .short
+    dateFormatter.timeStyle = .none
+    dateFormatter.locale = Locale(identifier: "ru_RU")
     
-    dateOfEducationLabel.text = "\(formateEducationDate(userInfo.educationPeriodStart))-\(formateEducationDate(userInfo.educationPeriodEnd))"
+    dateOfEducationLabel.text = "\(dateFormatter.string(from: userInfo.educationPeriodStart))-\(dateFormatter.string(from: userInfo.educationPeriodEnd))"
     dateOfEducationLabel.textAlignment = .center
     dateOfEducationLabel.font = UIFont.systemFont(ofSize: 24)
     dateOfEducationLabel.numberOfLines = 0
@@ -125,20 +130,6 @@ class UserDetailsViewController: UIViewController, UITextViewDelegate {
     super.viewDidLoad()
     navigationItem.largeTitleDisplayMode = .never
     setup()
-  }
-  
-  private func formateEducationDate(_ educationDate: Date) -> String {
-    let dateFormatterGet = DateFormatter()
-    dateFormatterGet.dateFormat = "yyyy-MM-dd HH:mm:ss +HHmm"
-    
-    let dateFormatterPrint = DateFormatter()
-    dateFormatterPrint.dateFormat = "dd.MM.yyyy"
-    
-    if let date = dateFormatterGet.date(from: "\(educationDate)") {
-      return dateFormatterPrint.string(from: date)
-    } else {
-      return "\(educationDate)"
-    }
   }
   
   private func setup() {

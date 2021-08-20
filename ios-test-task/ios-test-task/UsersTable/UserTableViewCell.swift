@@ -15,7 +15,6 @@ class UserTableViewCell: UITableViewCell {
     label.textColor = .black
     label.font = UIFont.boldSystemFont(ofSize: 24)
     label.textAlignment = .left
-//    label.numberOfLines = 0
     label.translatesAutoresizingMaskIntoConstraints = false
     
     return label
