@@ -1,9 +1,13 @@
 import Moya
 import Foundation
+import Network
 
 struct RequsetProvider {
   private let provider = MoyaProvider<MoyaExampleService>()
   let usersTableVC = UsersTableViewController()
+  private let monitor = NWPathMonitor()
+  private let queue = DispatchQueue(label: "Monitor")
+  private var users: [User] = []
   
   private func writeResultToDB(users: [User]) {
     DispatchQueue.global(qos: .background).async {
@@ -75,9 +79,18 @@ struct RequsetProvider {
   }
   
   func updateUsersData() {
-    flushDatabase()
-    getFirstUrlData()
-    getSecondUrlData()
-    getThirdUrlData()
+    monitor.start(queue: queue)
+    monitor.pathUpdateHandler = { path in
+      if path.status == .satisfied {
+        flushDatabase()
+        getFirstUrlData()
+        getSecondUrlData()
+        getThirdUrlData()
+      } else {
+        DispatchQueue.main.async {
+          usersTableVC.showErrorToast()
+        }
+      }
+    }
   }
 }

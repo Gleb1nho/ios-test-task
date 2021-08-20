@@ -15,11 +15,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     guard let windowScene = (scene as? UIWindowScene) else { return }
     let window = UIWindow(windowScene: windowScene)
     
-//    let vc = UsersTableViewController()
     let vc = RequsetProvider().usersTableVC
     let navVC = UINavigationController(rootViewController: vc)
     window.rootViewController = navVC
-    
 //    RequsetProvider().updateUsersData()
     
     self.window = window

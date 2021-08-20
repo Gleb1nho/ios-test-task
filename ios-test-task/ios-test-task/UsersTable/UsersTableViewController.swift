@@ -1,10 +1,7 @@
 import UIKit
 
 class UsersTableViewController: UITableViewController {
-  private var userCells: [UserDBModel] = {
-    let userCells = try! AppDatabase.shared.getUsersByQuery(query: "")
-    return userCells.sorted(by: { $0.name < $1.name })
-  }()
+  private lazy var userCells: [UserDBModel] = fetchCellsData()
     
   private var isSearchBarEmpty: Bool {
     searchController.searchBar.text?.isEmpty ?? true
@@ -36,9 +33,17 @@ class UsersTableViewController: UITableViewController {
     )
   }
   
+  private func fetchCellsData() -> [UserDBModel] {
+    let userCells = try! AppDatabase.shared.getUsersByQuery(query: "")
+    return userCells.sorted(by: { $0.name < $1.name })
+  }
+  
   @objc private func handleRefreshControl() {
     RequsetProvider().updateUsersData()
+
     DispatchQueue.main.async {
+      self.userCells = self.fetchCellsData().sorted(by: { $0.name < $1.name })
+      self.tableView.reloadData()
       self.tableView.refreshControl?.endRefreshing()
     }
   }
