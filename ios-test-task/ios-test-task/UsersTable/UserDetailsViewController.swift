@@ -41,12 +41,12 @@ class UserDetailsViewController: UIViewController, UITextViewDelegate {
   private lazy var dateOfEducationLabel: UILabel = {
     let dateOfEducationLabel = UILabel()
         
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateStyle = .short
-    dateFormatter.timeStyle = .none
-    dateFormatter.locale = Locale(identifier: "ru_RU")
+    let dateIntervalFormatter = DateIntervalFormatter()
+    dateIntervalFormatter.dateStyle = .short
+    dateIntervalFormatter.timeStyle = .none
+    dateIntervalFormatter.locale = Locale(identifier: "ru_RU")
     
-    dateOfEducationLabel.text = "\(dateFormatter.string(from: userInfo.educationPeriodStart))-\(dateFormatter.string(from: userInfo.educationPeriodEnd))"
+    dateOfEducationLabel.text = dateIntervalFormatter.string(from: userInfo.educationPeriodStart, to: userInfo.educationPeriodEnd)
     dateOfEducationLabel.textAlignment = .center
     dateOfEducationLabel.font = UIFont.systemFont(ofSize: 24)
     dateOfEducationLabel.numberOfLines = 0
