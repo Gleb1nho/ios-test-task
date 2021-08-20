@@ -6,7 +6,7 @@ struct RequsetProvider {
   let usersTableVC = UsersTableViewController()
   
   private func writeResultToDB(users: [User]) {
-    users.map {
+    users.forEach {
       var user = UserDBModel(user: $0)
       do {
         try AppDatabase.shared.saveUser(&user)
