@@ -56,7 +56,8 @@ struct RequsetProvider {
   private func getSecondUrlData() {
     DispatchQueue.global(qos: .background).async {
       provider.request(.getSecondUrlData) { result in
-        handleRequestResult(result: result)      }
+        handleRequestResult(result: result)
+      }
     }
   }
   
