@@ -6,53 +6,61 @@ struct RequsetProvider {
   let usersTableVC = UsersTableViewController()
   
   private func writeResultToDB(users: [User]) {
-    users.forEach {
-      var user = UserDBModel(user: $0)
-      do {
-        try AppDatabase.shared.saveUser(&user)
-      }
-      catch let dbWriteError {
-        print("An error occured while trying to write to db: \(dbWriteError)")
+    DispatchQueue.global(qos: .background).async {
+      users.forEach {
+        var user = UserDBModel(user: $0)
+        do {
+          try AppDatabase.shared.saveUser(&user)
+        }
+        catch let dbWriteError {
+          print("An error occured while trying to write to db: \(dbWriteError)")
+        }
       }
     }
   }
   
   private func handleRequestResult(result: Result<Response, MoyaError>) {
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .iso8601
+    DispatchQueue.global(qos: .background).async {
+      let decoder = JSONDecoder()
+      decoder.dateDecodingStrategy = .iso8601
 
-    switch result {
-    case .success(let response):
-      do {
-        try writeResultToDB(users: decoder.decode([User].self, from: response.data))
+      switch result {
+      case .success(let response):
+        do {
+          try writeResultToDB(users: decoder.decode([User].self, from: response.data))
+        }
+        catch let error {
+          print("An error occured while dealing with response: \(error)")
+        }
+      case .failure(let requestError):
+        print("An error occured while handling request: \(requestError)")
+        DispatchQueue.main.async {
+          usersTableVC.showErrorToast()
+        }
       }
-      catch let error {
-        print("An error occured while dealing with response: \(error)")
-      }
-    case .failure(let requestError):
-      print("An error occured while handling request: \(requestError)")
-      usersTableVC.showErrorToast()
     }
   }
   
   private func getFirstUrlData() {
-    provider.request(.getFirstUrlData) { result in
-      handleRequestResult(result: result)
-      print("First datasource data was delivered and served")
+    DispatchQueue.global(qos: .background).async {
+      provider.request(.getFirstUrlData) { result in
+        handleRequestResult(result: result)
+      }
     }
   }
   
   private func getSecondUrlData() {
-    provider.request(.getSecondUrlData) { result in
-      handleRequestResult(result: result)
-      print("Second datasource data was delivered and served")
+    DispatchQueue.global(qos: .background).async {
+      provider.request(.getSecondUrlData) { result in
+        handleRequestResult(result: result)      }
     }
   }
   
   private func getThirdUrlData() {
-    provider.request(.getThirdUrlData) { result in
-      handleRequestResult(result: result)
-      print("Third datasource data was delivered and served")
+    DispatchQueue.global(qos: .background).async {
+      provider.request(.getThirdUrlData) { result in
+        handleRequestResult(result: result)
+      }
     }
   }
   
