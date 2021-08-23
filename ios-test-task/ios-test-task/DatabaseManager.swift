@@ -72,4 +72,16 @@ extension AppDatabase {
       }
     }
   }
+  
+  func getCountOfUsers() throws -> Int {
+    try dbWriter.read { db -> Int in
+      do {
+        return try UserDBModel.fetchCount(db)
+      }
+      catch let err {
+        print(err)
+        return 0
+      }
+    }
+  }
 }

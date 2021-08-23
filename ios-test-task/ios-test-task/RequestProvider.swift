@@ -3,8 +3,8 @@ import Foundation
 import Network
 
 struct RequsetProvider {
-  private let provider = MoyaProvider<MoyaExampleService>()
   let usersTableVC = UsersTableViewController()
+  private let provider = MoyaProvider<MoyaExampleService>()
   private let monitor = NWPathMonitor()
   private let queue = DispatchQueue(label: "Monitor")
   private var users: [User] = []

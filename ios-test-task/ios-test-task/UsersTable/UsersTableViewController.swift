@@ -13,6 +13,7 @@ class UsersTableViewController: UITableViewController {
   
   private var searchTimer: Timer?
   private var toastTimer: Timer?
+  private var refreshTimer: Timer?
   
   private let searchController: UISearchController = {
     let searchController = UISearchController(searchResultsController: nil)
@@ -40,12 +41,7 @@ class UsersTableViewController: UITableViewController {
   
   @objc private func handleRefreshControl() {
     RequsetProvider().updateUsersData()
-
-    DispatchQueue.main.async {
-      self.userCells = self.fetchCellsData().sorted(by: { $0.name < $1.name })
-      self.tableView.reloadData()
-      self.tableView.refreshControl?.endRefreshing()
-    }
+    checkIfRefreshDone()
   }
   
   override func numberOfSections(in tableView: UITableView) -> Int {
@@ -145,6 +141,33 @@ extension UsersTableViewController {
         DispatchQueue.global(qos: .userInteractive).async {
           DispatchQueue.main.async {
             toastLabel.removeFromSuperview()
+          }
+        }
+      }
+    )
+  }
+  
+  func checkIfRefreshDone() {
+    self.refreshTimer?.invalidate()
+    
+    refreshTimer = Timer.scheduledTimer(
+      withTimeInterval: 0.1,
+      repeats: true,
+      block: { [weak self] timer in
+        DispatchQueue.global(qos: .background).async { [weak self] in
+          do {
+            let currentUsersCount = try AppDatabase.shared.getCountOfUsers()
+            if currentUsersCount == 7500 {
+              self?.refreshTimer?.invalidate()
+              DispatchQueue.main.async { [weak self] in
+                self!.userCells = self!.fetchCellsData()
+                self?.tableView.reloadData()
+                self?.tableView.refreshControl?.endRefreshing()
+              }
+            }
+          }
+          catch let err {
+            print("An error occured while getting data from database: \(err)")
           }
         }
       }
