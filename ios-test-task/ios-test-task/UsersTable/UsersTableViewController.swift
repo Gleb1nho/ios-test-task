@@ -39,12 +39,19 @@ class UsersTableViewController: UITableViewController {
   }
   
   @objc func handleRefreshControl() {
-    RequsetProvider().updateUsersData() {
+    RequsetProvider().updateUsersData() { result in
+      guard result else {
+        DispatchQueue.main.async { [weak self] in
+          self?.tableView.refreshControl?.endRefreshing()
+          self?.showToast(message: "Нет подключения к интернету")
+        }
+        return
+      }
       DispatchQueue.main.async { [weak self] in
         self!.userCells = self!.fetchCellsData()
         self?.tableView.reloadData()
         self?.tableView.refreshControl?.endRefreshing()
-        self?.showToast(message: "Данные успешно обновлены")
+        self?.showToast(message: "Fetch \(self!.userCells.count) users")
       }
     }
   }

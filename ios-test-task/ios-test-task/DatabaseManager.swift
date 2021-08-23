@@ -44,6 +44,34 @@ extension AppDatabase {
     }
   }
   
+  func saveUsers(users: [User]) throws {
+    try dbWriter.write { db in
+      users.forEach {
+        var user = UserDBModel(user: $0)
+        do {
+          try user.save(db)
+        }
+        catch let dbWriteError {
+          print("An error occured while trying to write to db: \(dbWriteError)")
+        }
+      }
+    }
+  }
+  
+  func saveCached(cachedUsers: [UserDBModel]) throws {
+    try dbWriter.write { db in
+      cachedUsers.forEach {
+        var user = $0
+        do {
+          try user.save(db)
+        }
+        catch let dbWriteError {
+          print("An error occured while trying to write to db: \(dbWriteError)")
+        }
+      }
+    }
+  }
+  
   func deleteAllUsers() throws {
     try dbWriter.write { db in
       _ = try UserDBModel.deleteAll(db)
