@@ -2,6 +2,8 @@ import UIKit
 
 class UsersTableViewController: UITableViewController {
   lazy var userCells: [UserDBModel] = fetchCellsData()
+  let firstLoadingIndicator = UIActivityIndicatorView(style: .large)
+
     
   private var isSearchBarEmpty: Bool {
     searchController.searchBar.text?.isEmpty ?? true
@@ -43,6 +45,7 @@ class UsersTableViewController: UITableViewController {
       guard result else {
         DispatchQueue.main.async { [weak self] in
           self?.tableView.refreshControl?.endRefreshing()
+          self?.firstLoadingIndicator.stopAnimating()
           self?.showToast(message: "Нет подключения к интернету")
         }
         return
@@ -51,6 +54,7 @@ class UsersTableViewController: UITableViewController {
         self!.userCells = self!.fetchCellsData()
         self?.tableView.reloadData()
         self?.tableView.refreshControl?.endRefreshing()
+        self?.firstLoadingIndicator.stopAnimating()
         self?.showToast(message: "Fetch \(self!.userCells.count) users")
       }
     }
@@ -82,6 +86,14 @@ class UsersTableViewController: UITableViewController {
     navigationController?.navigationBar.scrollEdgeAppearance = navigationBarAppearance
     navigationController?.navigationBar.prefersLargeTitles = true
     navigationItem.title = "Contacts"
+    
+    firstLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(firstLoadingIndicator)
+
+    NSLayoutConstraint.activate([
+      firstLoadingIndicator.centerXAnchor.constraint(equalTo: view.readableContentGuide.centerXAnchor),
+      firstLoadingIndicator.centerYAnchor.constraint(equalTo: view.readableContentGuide.centerYAnchor)
+    ])
   }
   
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
