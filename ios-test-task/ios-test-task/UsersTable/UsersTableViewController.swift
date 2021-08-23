@@ -1,7 +1,7 @@
 import UIKit
 
 class UsersTableViewController: UITableViewController {
-  private lazy var userCells: [UserDBModel] = fetchCellsData()
+  lazy var userCells: [UserDBModel] = fetchCellsData()
     
   private var isSearchBarEmpty: Bool {
     searchController.searchBar.text?.isEmpty ?? true
@@ -13,7 +13,6 @@ class UsersTableViewController: UITableViewController {
   
   private var searchTimer: Timer?
   private var toastTimer: Timer?
-  private var refreshTimer: Timer?
   
   private let searchController: UISearchController = {
     let searchController = UISearchController(searchResultsController: nil)
@@ -34,14 +33,20 @@ class UsersTableViewController: UITableViewController {
     )
   }
   
-  private func fetchCellsData() -> [UserDBModel] {
+  func fetchCellsData() -> [UserDBModel] {
     let userCells = try! AppDatabase.shared.getUsersByQuery(query: "")
     return userCells.sorted(by: { $0.name < $1.name })
   }
   
-  @objc private func handleRefreshControl() {
-    RequsetProvider().updateUsersData()
-    checkIfRefreshDone()
+  @objc func handleRefreshControl() {
+    RequsetProvider().updateUsersData() {
+      DispatchQueue.main.async { [weak self] in
+        self!.userCells = self!.fetchCellsData()
+        self?.tableView.reloadData()
+        self?.tableView.refreshControl?.endRefreshing()
+        self?.showToast(message: "Данные успешно обновлены")
+      }
+    }
   }
   
   override func numberOfSections(in tableView: UITableView) -> Int {
@@ -110,14 +115,14 @@ extension UsersTableViewController: UISearchResultsUpdating {
 }
 
 extension UsersTableViewController {
-  func showErrorToast() {
+  func showToast(message: String) {
     self.toastTimer?.invalidate()
     
     let toastLabel = UILabel()
     
     toastLabel.backgroundColor = .black
     toastLabel.textColor = .white
-    toastLabel.text = "Нет подключения к сети"
+    toastLabel.text = "\(message)"
     toastLabel.font = .boldSystemFont(ofSize: 20)
     toastLabel.backgroundColor = UIColor(white: 0, alpha: 0.6)
     toastLabel.layer.cornerRadius = 10
@@ -141,33 +146,6 @@ extension UsersTableViewController {
         DispatchQueue.global(qos: .userInteractive).async {
           DispatchQueue.main.async {
             toastLabel.removeFromSuperview()
-          }
-        }
-      }
-    )
-  }
-  
-  func checkIfRefreshDone() {
-    self.refreshTimer?.invalidate()
-    
-    refreshTimer = Timer.scheduledTimer(
-      withTimeInterval: 0.1,
-      repeats: true,
-      block: { [weak self] timer in
-        DispatchQueue.global(qos: .background).async { [weak self] in
-          do {
-            let currentUsersCount = try AppDatabase.shared.getCountOfUsers()
-            if currentUsersCount == 7500 {
-              self?.refreshTimer?.invalidate()
-              DispatchQueue.main.async { [weak self] in
-                self!.userCells = self!.fetchCellsData()
-                self?.tableView.reloadData()
-                self?.tableView.refreshControl?.endRefreshing()
-              }
-            }
-          }
-          catch let err {
-            print("An error occured while getting data from database: \(err)")
           }
         }
       }

@@ -1,10 +1,3 @@
-//
-//  SceneDelegate.swift
-//  ios-test-task
-//
-//  Created by Gleb Pestretsov on 28.07.2021.
-//
-
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -18,11 +11,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let vc = RequsetProvider().usersTableVC
     let navVC = UINavigationController(rootViewController: vc)
     window.rootViewController = navVC
-//    RequsetProvider().updateUsersData()
+    
+//    try? AppDatabase.shared.deleteAllUsers()
+//    
+//    if let dbUsersCount = try? AppDatabase.shared.getCountOfUsers(), dbUsersCount == 0 {
+//      vc.handleRefreshControl()
+//    }
     
     self.window = window
     window.makeKeyAndVisible()
   }
-
 }
 
