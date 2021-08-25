@@ -11,11 +11,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let vc = RequsetProvider().usersTableVC
     let navVC = UINavigationController(rootViewController: vc)
     window.rootViewController = navVC
-        
+            
     if
       let countOfUsers = try? AppDatabase.shared.getCountOfUsers(),
-      countOfUsers == 0 {
-      
+      countOfUsers == 0
+    {
       vc.firstLoadingIndicator.startAnimating()
       vc.handleRefreshControl()
     }

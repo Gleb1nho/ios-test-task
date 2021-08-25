@@ -15,6 +15,7 @@ class UsersTableViewController: UITableViewController {
   
   private var searchTimer: Timer?
   private var toastTimer: Timer?
+  private var autoRefreshTimer: Timer?
   
   private let searchController: UISearchController = {
     let searchController = UISearchController(searchResultsController: nil)
@@ -94,6 +95,8 @@ class UsersTableViewController: UITableViewController {
       firstLoadingIndicator.centerXAnchor.constraint(equalTo: view.readableContentGuide.centerXAnchor),
       firstLoadingIndicator.centerYAnchor.constraint(equalTo: view.readableContentGuide.centerYAnchor)
     ])
+    
+    startAutoRefresh()
   }
   
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -169,5 +172,19 @@ extension UsersTableViewController {
         }
       }
     )
+  }
+  
+  func startAutoRefresh() {
+    self.autoRefreshTimer?.invalidate()
+    
+    autoRefreshTimer = Timer.scheduledTimer(
+      withTimeInterval: 60,
+      repeats: true
+    ) { timer in
+        DispatchQueue.main.async { [weak self] in
+          self?.firstLoadingIndicator.startAnimating()
+          self?.handleRefreshControl()
+      }
+    }
   }
 }
