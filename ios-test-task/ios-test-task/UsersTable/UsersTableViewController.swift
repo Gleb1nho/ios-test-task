@@ -42,11 +42,13 @@ class UsersTableViewController: UITableViewController {
   }
   
   @objc func handleRefreshControl() {
-    RequsetProvider().updateUsersData() { result in
+    RequsetProvider().updateUsersData() { [weak self] result in
+      self?.autoRefreshTimer?.invalidate()
       guard result else {
         DispatchQueue.main.async { [weak self] in
           self?.tableView.refreshControl?.endRefreshing()
           self?.firstLoadingIndicator.stopAnimating()
+          self?.startAutoRefresh()
           self?.showToast(message: "Нет подключения к интернету")
         }
         return
@@ -56,6 +58,7 @@ class UsersTableViewController: UITableViewController {
         self?.tableView.reloadData()
         self?.tableView.refreshControl?.endRefreshing()
         self?.firstLoadingIndicator.stopAnimating()
+        self?.startAutoRefresh()
         self?.showToast(message: "Fetch \(self!.userCells.count) users")
       }
     }
@@ -165,7 +168,7 @@ extension UsersTableViewController {
       withTimeInterval: 2,
       repeats: false,
       block: { timer in
-        DispatchQueue.global(qos: .userInteractive).async {
+        DispatchQueue.global(qos: .userInteractive).sync {
           DispatchQueue.main.async {
             toastLabel.removeFromSuperview()
           }
@@ -178,12 +181,14 @@ extension UsersTableViewController {
     self.autoRefreshTimer?.invalidate()
     
     autoRefreshTimer = Timer.scheduledTimer(
-      withTimeInterval: 60,
+      withTimeInterval: 10,
       repeats: true
     ) { timer in
+      DispatchQueue.global(qos: .userInteractive).async {
         DispatchQueue.main.async { [weak self] in
           self?.firstLoadingIndicator.startAnimating()
           self?.handleRefreshControl()
+        }
       }
     }
   }
