@@ -175,13 +175,14 @@ extension UsersTableViewController {
         }
       }
     )
+    RunLoop.current.add(toastTimer!, forMode: .common)
   }
   
   func startAutoRefresh() {
     self.autoRefreshTimer?.invalidate()
     
     autoRefreshTimer = Timer.scheduledTimer(
-      withTimeInterval: 10,
+      withTimeInterval: 60,
       repeats: true
     ) { timer in
       DispatchQueue.global(qos: .userInteractive).async {
@@ -191,5 +192,6 @@ extension UsersTableViewController {
         }
       }
     }
+    RunLoop.current.add(autoRefreshTimer!, forMode: .common)
   }
 }
